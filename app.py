@@ -3,55 +3,66 @@ import cv2
 import numpy as np
 import paho.mqtt.client as mqtt
 
-# Configuración Pro
-st.set_page_config(page_title="PetGuard Lite", page_icon="🐈")
+# Configuración de la interfaz
+st.set_page_config(page_title="PetGuard Hub", page_icon="🐾", layout="centered")
 
 st.markdown("""
     <style>
-    .stApp { background-color: #f5f7f9; }
-    .status-card { padding: 20px; background: white; border-radius: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    .stApp { background-color: #f8f9fa; }
+    .main-card {
+        padding: 30px;
+        background-color: white;
+        border-radius: 20px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        text-align: center;
+    }
+    .stButton>button {
+        border-radius: 10px;
+        height: 3em;
+        font-weight: bold;
+    }
     </style>
     """, unsafe_allow_html=True)
 
-# Conexión MQTT
+# Lógica MQTT
 MQTT_BROKER = "broker.hivemq.com"
 client = mqtt.Client()
 try:
     client.connect(MQTT_BROKER, 1883, 60)
 except:
-    st.error("Error de conexión MQTT")
+    st.error("Error de conexión con el servidor MQTT")
 
-st.title("🐾 PetGuard Lite")
+st.title("🐾 PetGuard Pro")
+st.write("Control inteligente de acceso para tu mascota")
 
-col1, col2 = st.columns([1.5, 1])
+# --- SECCIÓN DE CÁMARA ---
+with st.container():
+    st.markdown('<div class="main-card">', unsafe_allow_html=True)
+    st.subheader("📸 Escáner de Mascota")
+    
+    # Este componente es mágico: abre la cámara del móvil automáticamente
+    foto = st.camera_input("Captura a tu mascota en la puerta")
+
+    if foto:
+        st.success("✅ ¡Imagen capturada!")
+        # Botón para simular que la IA confirmó que es un gato
+        if st.button("🐈 VALIDAR GATO Y ENVIAR A WOKWI"):
+            client.publish("petguard/detection", "CAT_DETECTED")
+            st.toast("Señal enviada a la matriz LED", icon="✨")
+    st.markdown('</div>', unsafe_allow_html=True)
+
+st.write("#")
+
+# --- SECCIÓN DE CONTROL ---
+col1, col2 = st.columns(2)
 
 with col1:
-    st.subheader("📸 Captura de Mascota")
-    # Usamos el componente nativo de Streamlit (más estable)
-    img_file = st.camera_input("Toma una foto de tu mascota")
-
-    if img_file:
-        # Convertir imagen a formato OpenCV
-        file_bytes = np.asarray(bytearray(img_file.read()), dtype=uint8)
-        frame = cv2.imdecode(file_bytes, 1)
-        
-        # Aquí simulamos la detección rápida
-        # En una versión Pro usaríamos un CascadeClassifier de OpenCV
-        st.success("✅ Foto recibida. Analizando...")
-        
-        # Botón para confirmar que es un gato (Manual para este prototipo rápido)
-        if st.button("Confirmar Gato 🐈"):
-            client.publish("petguard/detection", "CAT_DETECTED")
-            st.toast("Señal enviada a Wokwi!")
-
-with col2:
-    st.markdown('<div class="status-card">', unsafe_allow_html=True)
-    st.subheader("🚪 Control Puerta")
-    
-    if st.button("🔓 ABRIR PISTÓN", use_container_width=True):
+    if st.button("🔓 ABRIR PUERTA", use_container_width=True):
         client.publish("petguard/door", "OPEN")
         st.balloons()
-        
-    if st.button("🔒 CERRAR PISTÓN", use_container_width=True):
+        st.toast("Pistón activado", icon="🔓")
+
+with col2:
+    if st.button("🔒 CERRAR PUERTA", use_container_width=True):
         client.publish("petguard/door", "CLOSE")
-    st.markdown('</div>', unsafe_allow_html=True)
+        st.toast("Puerta bloqueada", icon="🔒")
