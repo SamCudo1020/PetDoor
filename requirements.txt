@@ -1,9 +1,5 @@
-streamlit==1.25.0
-streamlit-webrtc==0.47.1
-tornado==6.2
+streamlit
+streamlit-webrtc
 paho-mqtt
-opencv-python-headless
 ultralytics
-numpy
-libgl1
-libglib2.0-0
+opencv-python-headless
