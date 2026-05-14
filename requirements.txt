@@ -1,5 +1,4 @@
 streamlit
-streamlit-webrtc
 paho-mqtt
-ultralytics
 opencv-python-headless
+numpy
