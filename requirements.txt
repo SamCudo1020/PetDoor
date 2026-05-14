@@ -1,6 +1,5 @@
 streamlit
 streamlit-webrtc
-numpy
+paho-mqtt
 opencv-python-headless
-pytesseract
-Pillow
+numpy
